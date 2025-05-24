@@ -1,18 +1,41 @@
 package com.example.demo.Service;
 
+import com.example.demo.model.Client;
 import com.example.demo.model.UserRegistration;
+import com.example.demo.model.Worker;
+import com.example.demo.repository.ClientRepo;
 import com.example.demo.repository.RegUser;
+import com.example.demo.repository.WorkerRepo;
 import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 
 @Service
 public class UserService {
 
     @Autowired
     private RegUser regUser;
+
+    @Autowired
+    private ClientRepo clientRepo;
+
+    @Autowired
+    private WorkerRepo workerRepo;
+
+
+
 
     public UserRegistration create(UserRegistration userReg) {
         return regUser.save(userReg);
@@ -21,13 +44,57 @@ public class UserService {
     public List<UserRegistration> getAllUsers() {
         return regUser.findAll();
     }
+
     public UserRegistration findByEmailAndPassword(String email, String password) {
-        return regUser.findByEmailAndPassword(email, password)
-                .orElse(null); // return null if no match is found
+        return regUser.findByEmailAndPassword(email, password).orElse(null);
     }
-    public User findByEmail(String email) {
-        return regUser.findByEmail(email);
+
+    public Optional<UserRegistration> findById(Long id) {
+        return regUser.findById(id); // This is correct usage
     }
+
+
+    public void uploadProfilePicture(Long userId, MultipartFile file) throws IOException {
+        UserRegistration user = regUser.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        user.setProfilePicture(file.getBytes());
+        regUser.save(user);
+    }
+
+    public byte[] getProfilePictureByEmail(String email) {
+        UserRegistration user = regUser.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        return user.getProfilePicture();
+    }
+
+    public String saveWorkerDetails(Long userId, Worker worker) {
+        // Set user ID manually (from session)
+        worker.setUserId(userId);
+        workerRepo.save(worker);
+        return "Worker details saved successfully.";
+    }
+
+    public String updateWorkerDetails(Long userId, Worker worker) {
+        Optional<Worker> existing = workerRepo.findByUserId(userId);
+        if (existing.isPresent()) {
+            Worker existingWorker = existing.get();
+            existingWorker.setSkills(worker.getSkills());
+            existingWorker.setWorkCity(worker.getWorkCity());
+            existingWorker.setRating(worker.getRating());
+            workerRepo.save(existingWorker);
+            return "Worker details updated successfully.";
+        }
+        return "Worker details not found.";
+    }
+
+    public Worker getWorkerDetails(Long userId) {
+        return workerRepo.findByUserId(userId).orElse(null);
+    }
+
+
+
 
 
 }
