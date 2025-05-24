@@ -26,6 +26,10 @@ public class UserRegistration {
         private String city;
         private String postalCode;
         private String userType;
+        @Lob
+        @Column(columnDefinition = "MEDIUMBLOB")
+        private byte[] profilePicture;
+
 
         public Long getId() {
                 return id;
@@ -113,5 +117,13 @@ public class UserRegistration {
 
         public void setUserType(String userType) {
                 this.userType = userType;
+        }
+
+        public byte[] getProfilePicture() {
+                return profilePicture;
+        }
+
+        public void setProfilePicture(byte[] profilePicture) {
+                this.profilePicture = profilePicture;
         }
 }
