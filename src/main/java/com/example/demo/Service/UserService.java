@@ -1,26 +1,15 @@
 package com.example.demo.Service;
-
-import com.example.demo.model.Client;
 import com.example.demo.model.UserRegistration;
 import com.example.demo.model.Worker;
 import com.example.demo.repository.ClientRepo;
 import com.example.demo.repository.RegUser;
 import com.example.demo.repository.WorkerRepo;
-import org.apache.catalina.User;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.UrlResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 public class UserService {
@@ -92,9 +81,4 @@ public class UserService {
     public Worker getWorkerDetails(Long userId) {
         return workerRepo.findByUserId(userId).orElse(null);
     }
-
-
-
-
-
 }
