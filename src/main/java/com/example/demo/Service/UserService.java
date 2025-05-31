@@ -70,8 +70,7 @@ public class UserService {
         if (existing.isPresent()) {
             Worker existingWorker = existing.get();
             existingWorker.setSkills(worker.getSkills());
-            existingWorker.setWorkCity(worker.getWorkCity());
-            existingWorker.setRating(worker.getRating());
+            existingWorker.setChargePerHour(worker.getChargePerHour());
             workerRepo.save(existingWorker);
             return "Worker details updated successfully.";
         }
@@ -81,4 +80,7 @@ public class UserService {
     public Worker getWorkerDetails(Long userId) {
         return workerRepo.findByUserId(userId).orElse(null);
     }
+
+
+
 }
