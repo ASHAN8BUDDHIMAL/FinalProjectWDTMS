@@ -13,15 +13,15 @@ import java.util.List;
 @RequestMapping("/api/find")
 public class FindWorkerController {
 
-    @Autowired
-    private FindWorkerService findworkerService;
-
-    @GetMapping("/matched-workers")
-    public ResponseEntity<List<RegUser>> getMatchedWorkers(@RequestParam String skill,
-                                                           @RequestParam String location,
-                                                           @RequestParam(defaultValue = "0") double minRating) {
-        List<RegUser> matchedWorkers = findworkerService.findMatchedWorkers(skill, location, minRating);
-        return ResponseEntity.ok(matchedWorkers);
-    }
+//    @Autowired
+//    private FindWorkerService findworkerService;
+//
+//    @GetMapping("/matched-workers")
+//    public ResponseEntity<List<RegUser>> getMatchedWorkers(@RequestParam String skill,
+//                                                           @RequestParam String location,
+//                                                           @RequestParam(defaultValue = "0") double minRating) {
+//        List<RegUser> matchedWorkers = findworkerService.findMatchedWorkers(skill, location, minRating);
+//        return ResponseEntity.ok(matchedWorkers);
+//    }
 
 }

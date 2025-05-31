@@ -15,13 +15,9 @@ public interface WorkerRepo extends JpaRepository<Worker,Long> {
 
 
 
-    @Query("SELECT w.userId FROM Worker w " +
-            "WHERE LOWER(w.skills) LIKE LOWER(CONCAT('%', :skill, '%')) " +
-            "AND LOWER(w.workCity) = LOWER(:location) " +
-            "AND w.rating >= :minRating")
-    List<Long> findMatchingRegUserIds(@Param("skill") String skill,
-                                      @Param("location") String location,
-                                      @Param("minRating") double minRating);
+
+
+
     }
 
 
