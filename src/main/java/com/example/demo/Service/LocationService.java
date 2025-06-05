@@ -13,11 +13,12 @@ public class LocationService {
     @Autowired
     private LocationRepo locationRepo;
 
-    public Location saveOrUpdate(Long userId, Double lat, Double lon, String city) {
+    public Location saveOrUpdate(Long userId,Long taskId, Double lat, Double lon, String city) {//
         Optional<Location> existing = locationRepo.findByUserId(userId);
         Location location = existing.orElse(new Location());
 
         location.setUserId(userId);
+        location.setTaskId(taskId);//
         location.setLatitude(lat);
         location.setLongitude(lon);
         location.setCity(city);

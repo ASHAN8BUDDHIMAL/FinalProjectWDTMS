@@ -26,6 +26,8 @@ public class CreateTaskController {
         }
 
         CreateTask createdTask = createtaskService.createTask(userId, task);
+        session.setAttribute("createdTaskId", createdTask.getId());//
+
         return ResponseEntity.ok(createdTask);  // ✅ Return full task object, not just 1
     }
 
