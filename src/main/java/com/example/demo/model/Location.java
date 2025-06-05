@@ -14,9 +14,18 @@ public class Location {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
+    private Long taskId;
     private Double latitude;
     private Double longitude;
     private String city;
+
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
+    }
 
     public Long getId() {
         return id;

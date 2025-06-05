@@ -15,22 +15,17 @@ public class CreateTask {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
-
     private Long userId;         // owner of the task
-
     private String title;
     private String description;
-
-    private String requiredSkills;  // comma-separated, e.g. "Plumbing,Electrical"
-    private String location;        // e.g. "Colombo"
+    private String requiredSkills;
     private Double minRating;
 
     @CreationTimestamp
     @Column(name = "created_date", updatable = false, nullable = false)
     private LocalDateTime createdDate;
     private LocalDateTime scheduledDate;
-
-    private String status;      // e.g. "COMPILED" or "ASSIGNED"
+    private String status;
     private Double allocatedAmount;
     private String workerDone;
 
@@ -74,13 +69,13 @@ public class CreateTask {
         this.requiredSkills = requiredSkills;
     }
 
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
-    }
+//    public String getLocation() {
+//        return location;
+//    }
+//
+//    public void setLocation(String location) {
+//        this.location = location;
+//    }
 
     public LocalDateTime getCreatedDate() {
         return createdDate;
@@ -130,7 +125,22 @@ public class CreateTask {
         this.workerDone = workerDone;
     }
 
-    }
+//    public Double getLatitude() {
+//        return latitude;
+//    }
+//
+//    public void setLatitude(Double latitude) {
+//        this.latitude = latitude;
+//    }
+//
+//    public Double getLongitude() {
+//        return longitude;
+//    }
+//
+//    public void setLongitude(Double longitude) {
+//        this.longitude = longitude;
+//    }
+}
 
 
 

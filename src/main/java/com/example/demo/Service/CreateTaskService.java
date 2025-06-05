@@ -36,7 +36,6 @@ public class CreateTaskService {
                     t.setTitle(updates.getTitle());
                     t.setDescription(updates.getDescription());
                     t.setRequiredSkills(updates.getRequiredSkills());
-                    t.setLocation(updates.getLocation());
                     t.setMinRating(updates.getMinRating());
                     t.setScheduledDate(updates.getScheduledDate());
                     t.setStatus(updates.getStatus());
