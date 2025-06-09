@@ -14,6 +14,7 @@ public interface RegUser extends JpaRepository<UserRegistration, Long> {
     Optional<UserRegistration> findByEmail(String email);
 
     List<RegUser> findByIdIn(List<Long> ids);
+    Optional<UserRegistration> findById(Long id);
 }
 
 
