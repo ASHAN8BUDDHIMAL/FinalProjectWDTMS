@@ -7,18 +7,16 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 @Entity
-@Table(name = "worker_locations")
-public class Location {
-
+@Table(name = "task_locations")
+public class TaskLocation {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private Long userId;
+    private Long taskId;
     private Double latitude;
     private Double longitude;
     private String city;
-
-
 
     public Long getId() {
         return id;
@@ -34,6 +32,14 @@ public class Location {
 
     public void setUserId(Long userId) {
         this.userId = userId;
+    }
+
+    public Long getTaskId() {
+        return taskId;
+    }
+
+    public void setTaskId(Long taskId) {
+        this.taskId = taskId;
     }
 
     public Double getLatitude() {
@@ -60,4 +66,3 @@ public class Location {
         this.city = city;
     }
 }
-
