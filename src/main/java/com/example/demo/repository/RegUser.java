@@ -1,6 +1,5 @@
 package com.example.demo.repository;
 import com.example.demo.model.UserRegistration;
-import org.apache.catalina.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
@@ -14,7 +13,9 @@ public interface RegUser extends JpaRepository<UserRegistration, Long> {
     Optional<UserRegistration> findByEmail(String email);
 
     List<RegUser> findByIdIn(List<Long> ids);
-    Optional<UserRegistration> findById(Long id);
+//    Optional<UserRegistration> findById(Long id);
+
+
 }
 
 

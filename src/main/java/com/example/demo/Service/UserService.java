@@ -38,6 +38,7 @@ public class UserService {
         return regUser.findByEmailAndPassword(email, password).orElse(null);
     }
 
+
     public Optional<UserRegistration> findById(Long id) {
         return regUser.findById(id); // This is correct usage
     }

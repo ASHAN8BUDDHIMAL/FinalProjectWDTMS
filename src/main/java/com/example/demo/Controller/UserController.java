@@ -59,6 +59,7 @@ public class UserController {
     public ResponseEntity<?> getProfile(HttpSession session) {
 
         Long userId = (Long) session.getAttribute("loggedInUserId");
+        System.out.println("Session loggedInUserId: " + userId);
         if (userId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Not logged in");
         }
