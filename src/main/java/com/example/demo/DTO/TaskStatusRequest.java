@@ -1,11 +1,11 @@
 package com.example.demo.DTO;
 
 public class TaskStatusRequest {
-    private Long userId;
+
     private Long taskId;
     private Long workerId;
     private String status;
-
+    private Long userId;
     public Long getUserId() {
         return userId;
     }
