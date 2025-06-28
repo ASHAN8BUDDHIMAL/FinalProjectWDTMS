@@ -15,6 +15,8 @@ public interface RegUser extends JpaRepository<UserRegistration, Long> {
     List<RegUser> findByIdIn(List<Long> ids);
 //    Optional<UserRegistration> findById(Long id);
 
+    List<UserRegistration> findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(String firstName, String lastName);
+
 
 }
 

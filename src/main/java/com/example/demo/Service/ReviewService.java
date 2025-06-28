@@ -1,37 +1,93 @@
 package com.example.demo.Service;
 
 
-import com.example.demo.model.Review;
-import com.example.demo.repository.ReviewRepo;
-import lombok.RequiredArgsConstructor;
-import org.springframework.stereotype.Service;
 
+import com.example.demo.DTO.ReviewResponseDTO;
+import com.example.demo.model.CreateTask;
+import com.example.demo.model.Review;
+import com.example.demo.model.UserRegistration;
+import com.example.demo.repository.CreateTaskRepo;
+import com.example.demo.repository.RegUser;
+import com.example.demo.repository.ReviewRepo;
+import jakarta.servlet.http.HttpSession;
+import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import java.util.stream.Collectors;
+
 
 @Service
 @RequiredArgsConstructor
 public class ReviewService {
 
-    private final ReviewRepo reviewRepo;
+    @Autowired
+    private ReviewRepo reviewRepo;
 
-    public Review saveReview(Review review) {
-        Review savedReview = reviewRepo.save(review);
-        updateAverageRating(savedReview.getWorkerId());
-        return savedReview;
-    }
+    @Autowired
+    private CreateTaskRepo taskRepo;
 
-    public List<Review> getReviewsByWorkerId(Long workerId) {
-        return reviewRepo.findByWorkerId(workerId);
-    }
+    @Autowired
+    private RegUser userRepo;
 
-    private void updateAverageRating(Long workerId) {
-        Double avg = reviewRepo.calculateAverageRatingByWorkerId(workerId);
-        if (avg != null) {
-            List<Review> reviews = reviewRepo.findByWorkerId(workerId);
-            for (Review r : reviews) {
-                r.setAverageRating(avg);
-            }
-            reviewRepo.saveAll(reviews);
+    public Review createReview(Long taskId, Long workerId, Long userId, int rating, String text, MultipartFile image, HttpSession session) throws IOException {
+        Long sessionUserId = (Long) session.getAttribute("loggedInUserId");
+        if (!userId.equals(sessionUserId)) {
+            throw new RuntimeException("Unauthorized");
         }
+
+        CreateTask task = taskRepo.findById(taskId).orElseThrow(() -> new RuntimeException("Task not found"));
+
+        if (!task.getUserId().equals(userId)) {
+            throw new RuntimeException("Task doesn't belong to user");
+        }
+
+        userRepo.findById(workerId).orElseThrow(() -> new RuntimeException("Worker not found"));
+
+        if (reviewRepo.existsByTaskIdAndUserId(taskId, userId)) {
+            throw new RuntimeException("Already reviewed this task");
+        }
+
+        Review review = new Review();
+        review.setTaskId(taskId);
+        review.setWorkerId(workerId);
+        review.setUserId(userId);
+        review.setRating(rating);
+        review.setText(text);
+
+        if (image != null && !image.isEmpty()) {
+            review.setImage(image.getBytes());
+        }
+
+        return reviewRepo.save(review);
     }
+
+    public List<ReviewResponseDTO> getReviewsForWorker(Long workerId) {
+        List<Review> reviews = reviewRepo.findByWorkerId(workerId);
+
+        return reviews.stream().map(review -> {
+            UserRegistration user = userRepo.findById(review.getUserId()).orElse(null);
+            String userName = (user != null) ? user.getFirstName() + " " + user.getLastName() : "Unknown";
+            String base64Image = null;
+            if (review.getImage() != null) {
+                base64Image = Base64.getEncoder().encodeToString(review.getImage());
+            }
+
+            return new ReviewResponseDTO(
+                    review.getId(),
+                    review.getUserId(),
+                    userName,
+                    review.getRating(),
+                    review.getText(),
+                    base64Image,
+                    review.getCreatedAt()
+            );
+        }).collect(Collectors.toList());
+    }
+
+
 }

@@ -82,6 +82,8 @@ public class UserService {
         return workerRepo.findByUserId(userId).orElse(null);
     }
 
-
+    public List<UserRegistration> searchUsersByName(String name) {
+        return regUser.findByFirstNameContainingIgnoreCaseOrLastNameContainingIgnoreCase(name, name);
+    }
 
 }
