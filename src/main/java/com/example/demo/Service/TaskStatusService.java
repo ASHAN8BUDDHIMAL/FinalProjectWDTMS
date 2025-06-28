@@ -1,5 +1,6 @@
 package com.example.demo.Service;
 
+import com.example.demo.DTO.GetWorkerDTO;
 import com.example.demo.DTO.ShowStatusDTO;
 import com.example.demo.DTO.TaskStatusRequest;
 import com.example.demo.model.CreateTask;
@@ -11,9 +12,8 @@ import com.example.demo.repository.TaskStatusRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
+import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
@@ -105,79 +105,141 @@ public class TaskStatusService {
         }
     }
 
-    public List<ShowStatusDTO> getAcceptedTasksForClient(Long clientId) {
-        // Get all tasks created by this client
+    public List<ShowStatusDTO> getAllTasksForClient(Long clientId) {
+        // 1. Get all tasks created by this client
         List<CreateTask> clientTasks = createTaskRepo.findByUserId(clientId);
-        List<Long> clientTaskIds = clientTasks.stream().map(CreateTask::getId).collect(Collectors.toList());
-
-        if (clientTaskIds.isEmpty()) {
-            return List.of();
+        if (clientTasks.isEmpty()) {
+            return Collections.emptyList();
         }
 
-        // Find all ACCEPTED statuses for this client’s tasks
-        List<TaskStatus> acceptedStatuses = taskStatusRepo.findByTaskIdInAndStatus(clientTaskIds, "ACCEPTED");
+        // 2. Get all task IDs
+        List<Long> taskIds = clientTasks.stream()
+                .map(CreateTask::getId)
+                .collect(Collectors.toList());
 
-        return acceptedStatuses.stream()
-                .map(this::buildShowStatusDTO)
+        // 3. Find ALL statuses for these tasks
+        List<TaskStatus> allStatuses = taskStatusRepo.findByTaskIdIn(taskIds);
+
+        // 4. Collect all user IDs (workers + client)
+        Set<Long> userIds = allStatuses.stream()
+                .map(TaskStatus::getWorkerId)
                 .filter(Objects::nonNull)
+                .collect(Collectors.toSet());
+        userIds.add(clientId); // Ensure client is included
+
+        // 5. Fetch all users in one query
+        Map<Long, UserRegistration> usersMap = regUser.findAllById(userIds)
+                .stream()
+                .collect(Collectors.toMap(UserRegistration::getId, Function.identity()));
+
+        // 6. Build the DTOs
+        return allStatuses.stream()
+                .map(status -> {
+                    ShowStatusDTO dto = new ShowStatusDTO();
+                    CreateTask task = clientTasks.stream()
+                            .filter(t -> t.getId().equals(status.getTaskId()))
+                            .findFirst()
+                            .orElse(null);
+
+                    // Set task details
+                    if (task != null) {
+                        dto.setTaskId(task.getId());
+                        dto.setTitle(task.getTitle());
+                        dto.setDescription(task.getDescription());
+                        dto.setRequiredSkills(task.getRequiredSkills());
+                        dto.setMinRating(task.getMinRating());
+                        dto.setScheduledDate(task.getScheduledDate());
+                        dto.setAllocatedAmount(task.getAllocatedAmount());
+                        dto.setUserId(task.getUserId());
+                    }
+
+                    // Set status info
+                    dto.setStatus(status.getStatus());
+                    dto.setWorkerId(status.getWorkerId());
+
+                    // Set worker details (if exists)
+                    UserRegistration worker = usersMap.get(status.getWorkerId());
+                    if (worker != null) {
+                        dto.setWorkerFirstName(worker.getFirstName());
+                        dto.setWorkerLastName(worker.getLastName());
+                    }
+
+                    // Set client details (NEW)
+                    UserRegistration client = usersMap.get(clientId);
+                    if (client != null) {
+                        dto.setFirstName(client.getFirstName()); // Set client's first name
+                        dto.setLastName(client.getLastName());   // Set client's last name
+                    }
+
+                    return dto;
+                })
                 .collect(Collectors.toList());
     }
 
-
     // Client confirms the accepted task
-    public TaskStatus confirmAcceptedTask(Long taskId, Long clientId) {
-        Optional<TaskStatus> optionalStatus = taskStatusRepo.findByTaskId(taskId);
+    public TaskStatus confirmTask(Long taskId, Long workerId) {
+        // 1. Find the specific ACCEPTED status record
+        TaskStatus status = taskStatusRepo
+                .findByTaskIdAndWorkerIdAndStatus(taskId, workerId, "ACCEPTED")
+                .orElseThrow(() -> new TaskConfirmationException(
+                        "No acceptable task found for confirmation. " +
+                                "Either: (1) Task doesn't exist, (2) Worker didn't accept it, or " +
+                                "(3) It was already confirmed"
+                ));
 
-        if (optionalStatus.isPresent()) {
-            TaskStatus status = optionalStatus.get();
-
-            CreateTask task = createTaskRepo.findById(taskId)
-                    .orElseThrow(() -> new RuntimeException("Task not found"));
-
-            if (!task.getUserId().equals(clientId)) {
-                throw new RuntimeException("Unauthorized: This task does not belong to this client.");
-            }
-
-            if (!status.getStatus().equals("ACCEPTED")) {
-                throw new RuntimeException("Task must be in ACCEPTED status to confirm.");
-            }
-
+        // 2. Update status if needed (idempotent operation)
+        if (!"CONFIRMED".equals(status.getStatus())) {
             status.setStatus("CONFIRMED");
             return taskStatusRepo.save(status);
-        } else {
-            throw new RuntimeException("Task status not found.");
+        }
+
+        return status;
+    }
+
+    // Custom exception for better error handling
+    public static class TaskConfirmationException extends RuntimeException {
+        public TaskConfirmationException(String message) {
+            super(message);
         }
     }
 
-    // Build DTO from TaskStatus
-    private ShowStatusDTO buildShowStatusDTO(TaskStatus status) {
-        Optional<CreateTask> taskOpt = createTaskRepo.findById(status.getTaskId());
-        if (taskOpt.isEmpty()) return null;
+    // Add these methods to your TaskStatusService class
 
-        CreateTask task = taskOpt.get();
+    public TaskStatus completeTask(Long taskId, Long workerId) {
+        // 1. Find the specific CONFIRMED status record
+        TaskStatus status = taskStatusRepo
+                .findByTaskIdAndWorkerIdAndStatus(taskId, workerId, "CONFIRMED")
+                .orElseThrow(() -> new TaskStatusChangeException(
+                        "No confirmed task found for completion. " +
+                                "Either: (1) Task doesn't exist, (2) Worker didn't confirm it, or " +
+                                "(3) It was already completed/incompleted"
+                ));
 
-        Optional<UserRegistration> userOpt = regUser.findById(task.getUserId());
-        if (userOpt.isEmpty()) return null;
+        // 2. Update status
+        status.setStatus("COMPLETED");
+        return taskStatusRepo.save(status);
+    }
 
-        UserRegistration user = userOpt.get();
+    public TaskStatus incompleteTask(Long taskId, Long workerId) {
+        // 1. Find the specific CONFIRMED status record
+        TaskStatus status = taskStatusRepo
+                .findByTaskIdAndWorkerIdAndStatus(taskId, workerId, "CONFIRMED")
+                .orElseThrow(() -> new TaskStatusChangeException(
+                        "No confirmed task found for marking incomplete. " +
+                                "Either: (1) Task doesn't exist, (2) Worker didn't confirm it, or " +
+                                "(3) It was already completed/incompleted"
+                ));
 
-        ShowStatusDTO dto = new ShowStatusDTO();
-        dto.setTaskId(task.getId());
-        dto.setTitle(task.getTitle());
-        dto.setDescription(task.getDescription());
-        dto.setRequiredSkills(task.getRequiredSkills());
-        dto.setMinRating(task.getMinRating());
-        dto.setScheduledDate(task.getScheduledDate());
-        dto.setAllocatedAmount(task.getAllocatedAmount());
-        dto.setStatus(status.getStatus());
+        // 2. Update status
+        status.setStatus("INCOMPLETED");
+        return taskStatusRepo.save(status);
+    }
 
-        dto.setUserId(user.getId());
-        dto.setFirstName(user.getFirstName());
-        dto.setLastName(user.getLastName());
-
-
-
-        return dto;
+    // Custom exception for status changes
+    public static class TaskStatusChangeException extends RuntimeException {
+        public TaskStatusChangeException(String message) {
+            super(message);
+        }
     }
 
 

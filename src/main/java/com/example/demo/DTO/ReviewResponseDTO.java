@@ -1,41 +1,19 @@
-package com.example.demo.model;
+package com.example.demo.DTO;
 
-import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
-
-@Entity
-@Table(name = "task_reviews")
-@Data
-@NoArgsConstructor
 @AllArgsConstructor
-@Builder
-
-public class Review {
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+@Data
+public class ReviewResponseDTO {
     private Long id;
-
     private Long userId;
-    private Long workerId;
-    private Long taskId;
+    private String userName;
     private int rating;
     private String text;
-    @Lob
-    @Column(columnDefinition = "LONGBLOB")
-    private byte[] image;
-
+    private String base64Image;
     private LocalDateTime createdAt;
-
-    @PrePersist
-    protected void onCreate() {
-        createdAt = LocalDateTime.now();
-    }
 
     public Long getId() {
         return id;
@@ -53,20 +31,12 @@ public class Review {
         this.userId = userId;
     }
 
-    public Long getWorkerId() {
-        return workerId;
+    public String getUserName() {
+        return userName;
     }
 
-    public void setWorkerId(Long workerId) {
-        this.workerId = workerId;
-    }
-
-    public Long getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
+    public void setUserName(String userName) {
+        this.userName = userName;
     }
 
     public int getRating() {
@@ -85,12 +55,12 @@ public class Review {
         this.text = text;
     }
 
-    public byte[] getImage() {
-        return image;
+    public String getBase64Image() {
+        return base64Image;
     }
 
-    public void setImage(byte[] image) {
-        this.image = image;
+    public void setBase64Image(String base64Image) {
+        this.base64Image = base64Image;
     }
 
     public LocalDateTime getCreatedAt() {

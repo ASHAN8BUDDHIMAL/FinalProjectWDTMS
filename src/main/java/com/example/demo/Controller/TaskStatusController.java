@@ -10,8 +10,10 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+
+import java.time.Instant;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
@@ -66,30 +68,97 @@ public class TaskStatusController {
     }
 
     // View all accepted tasks that need client confirmation
-    @GetMapping("/accepted")
-    public ResponseEntity<List<ShowStatusDTO>> getAcceptedTasksForClient(HttpSession session) {
+    @GetMapping("/client-tasks")
+    public ResponseEntity<List<ShowStatusDTO>> getAllClientTasks(HttpSession session) {
         Long clientId = (Long) session.getAttribute("loggedInUserId");
         if (clientId == null) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
         }
 
-        List<ShowStatusDTO> acceptedTasks = svc.getAcceptedTasksForClient(clientId);
-        return ResponseEntity.ok(acceptedTasks);
+        List<ShowStatusDTO> tasks = svc.getAllTasksForClient(clientId);
+        return ResponseEntity.ok(tasks);
     }
 
-    // Client confirms an accepted task
-    @PutMapping("/client-confirm")
-    public ResponseEntity<?> confirmTask(@RequestBody TaskStatusRequest req, HttpSession session) {
+//    // Client confirms an accepted task
+//    @PutMapping("/{taskId}/confirm/{workerId}")
+//    public ResponseEntity<?> confirmTask(
+//            @PathVariable Long taskId,
+//            @PathVariable Long workerId) {
+//
+//        try {
+//            TaskStatus confirmedStatus = svc.confirmTask(taskId, workerId);
+//
+//            return ResponseEntity.ok(Map.of(
+//                    "status", "success",
+//                    "data", Map.of(
+//                            "taskId", confirmedStatus.getTaskId(),
+//                            "workerId", confirmedStatus.getWorkerId(),
+//                            "newStatus", confirmedStatus.getStatus(),
+//                            "confirmedAt", confirmedStatus.getUpdatedAt()
+//                    )
+//            ));
+//
+//        } catch (RuntimeException e) {
+//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+//                    .body(Map.of(
+//                            "status", "error",
+//                            "message", e.getMessage(),
+//                            "timestamp", Instant.now()
+//                    ));
+//        }
+//    }
+
+
+    @PutMapping("/{taskId}/status/{workerId}")
+    public ResponseEntity<?> changeTaskStatus(
+            @PathVariable Long taskId,
+            @PathVariable Long workerId,
+            @RequestBody Map<String, String> requestBody,
+            HttpSession session) {
+
         Long clientId = (Long) session.getAttribute("loggedInUserId");
         if (clientId == null) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Client not logged in");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("User not logged in");
+        }
+
+        String newStatus = requestBody.get("status");
+        if (newStatus == null) {
+            return ResponseEntity.badRequest().body("Status is required");
         }
 
         try {
-            TaskStatus confirmedTask = svc.confirmAcceptedTask(req.getTaskId(), clientId);
-            return ResponseEntity.ok(confirmedTask);
+            TaskStatus updatedStatus;
+            switch (newStatus.toUpperCase()) {
+                case "CONFIRMED":
+                    updatedStatus = svc.confirmTask(taskId, workerId);
+                    break;
+                case "COMPLETED":
+                    updatedStatus = svc.completeTask(taskId, workerId);
+                    break;
+                case "INCOMPLETED":
+                    updatedStatus = svc.incompleteTask(taskId, workerId);
+                    break;
+                default:
+                    return ResponseEntity.badRequest().body("Invalid status value");
+            }
+
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "data", Map.of(
+                            "taskId", updatedStatus.getTaskId(),
+                            "workerId", updatedStatus.getWorkerId(),
+                            "newStatus", updatedStatus.getStatus(),
+                            "updatedAt", updatedStatus.getUpdatedAt()
+                    )
+            ));
+
         } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of(
+                            "status", "error",
+                            "message", e.getMessage(),
+                            "timestamp", Instant.now()
+                    ));
         }
     }
 

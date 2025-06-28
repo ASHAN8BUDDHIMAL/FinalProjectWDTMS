@@ -11,10 +11,36 @@ public class ShowStatusDTO {
     private LocalDateTime scheduledDate;
     private String status;
     private Double allocatedAmount;
-
+    private Long workerId;
     private Long userId; // task owner
     private String firstName;
     private String lastName;
+    private String workerFirstName;
+    private String workerLastName;
+
+    public String getWorkerFirstName() {
+        return workerFirstName;
+    }
+
+    public void setWorkerFirstName(String workerFirstName) {
+        this.workerFirstName = workerFirstName;
+    }
+
+    public String getWorkerLastName() {
+        return workerLastName;
+    }
+
+    public void setWorkerLastName(String workerLastName) {
+        this.workerLastName = workerLastName;
+    }
+
+    public Long getWorkerId() {
+        return workerId;
+    }
+
+    public void setWorkerId(Long workerId) {
+        this.workerId = workerId;
+    }
 
     public Long getTaskId() {
         return taskId;
