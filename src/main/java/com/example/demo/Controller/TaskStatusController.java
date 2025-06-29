@@ -79,35 +79,6 @@ public class TaskStatusController {
         return ResponseEntity.ok(tasks);
     }
 
-//    // Client confirms an accepted task
-//    @PutMapping("/{taskId}/confirm/{workerId}")
-//    public ResponseEntity<?> confirmTask(
-//            @PathVariable Long taskId,
-//            @PathVariable Long workerId) {
-//
-//        try {
-//            TaskStatus confirmedStatus = svc.confirmTask(taskId, workerId);
-//
-//            return ResponseEntity.ok(Map.of(
-//                    "status", "success",
-//                    "data", Map.of(
-//                            "taskId", confirmedStatus.getTaskId(),
-//                            "workerId", confirmedStatus.getWorkerId(),
-//                            "newStatus", confirmedStatus.getStatus(),
-//                            "confirmedAt", confirmedStatus.getUpdatedAt()
-//                    )
-//            ));
-//
-//        } catch (RuntimeException e) {
-//            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-//                    .body(Map.of(
-//                            "status", "error",
-//                            "message", e.getMessage(),
-//                            "timestamp", Instant.now()
-//                    ));
-//        }
-//    }
-
 
     @PutMapping("/{taskId}/status/{workerId}")
     public ResponseEntity<?> changeTaskStatus(
