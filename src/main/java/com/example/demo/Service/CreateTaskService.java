@@ -1,8 +1,10 @@
 package com.example.demo.Service;
 
 import com.example.demo.model.CreateTask;
+import com.example.demo.model.TaskStatus;
 import com.example.demo.repository.CreateTaskRepo;
 import com.example.demo.repository.RegUser;
+import com.example.demo.repository.TaskStatusRepo;
 import com.example.demo.repository.WorkerRepo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,9 @@ public class CreateTaskService {
 
     @Autowired
     private RegUser regUser;
+
+    @Autowired
+    private TaskStatusRepo taskStatusRepo;
 
 
     public CreateTask createTask(Long userId, CreateTask task) {
@@ -45,10 +50,10 @@ public class CreateTaskService {
                 });
     }
 
-
-    public List<CreateTask> getTasks(Long userId) {
-        return createtaskRepo.findByUserId(userId);
-    }
+//
+//    public List<CreateTask> getTasks(Long userId) {
+//        return createtaskRepo.findByUserId(userId);
+//    }
 
     public boolean deleteTask(Long userId, Long taskId) {
         Optional<CreateTask> optionalTask = createtaskRepo.findById(taskId);
@@ -58,6 +63,24 @@ public class CreateTaskService {
         }
         return false;
     }
+    public List<CreateTask> getTasks(Long userId) {
+        List<CreateTask> allTasks = createtaskRepo.findByUserId(userId);
+
+        // Get all task IDs that are marked COMPLETED for any worker
+        List<Long> completedTaskIds = taskStatusRepo.findTaskIdsWithCompletedStatus();
+
+        // Filter out tasks that are COMPLETED
+        List<CreateTask> visibleTasks = new ArrayList<>();
+        for (CreateTask task : allTasks) {
+            if (!completedTaskIds.contains(task.getId())) {
+                visibleTasks.add(task);
+            }
+        }
+
+        return visibleTasks;
+    }
+
+
 
 
 }

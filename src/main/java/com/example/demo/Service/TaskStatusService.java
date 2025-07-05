@@ -1,6 +1,5 @@
 package com.example.demo.Service;
 
-import com.example.demo.DTO.GetWorkerDTO;
 import com.example.demo.DTO.ShowStatusDTO;
 import com.example.demo.DTO.TaskStatusRequest;
 import com.example.demo.model.CreateTask;
@@ -28,6 +27,10 @@ public class TaskStatusService {
     @Autowired
     private RegUser regUser;
 
+    @Autowired
+    private EmailService emailService;
+
+
     public TaskStatus updateStatus(TaskStatusRequest request) {
         Optional<TaskStatus> optionalStatus = taskStatusRepo.findByTaskIdAndWorkerId(
                 request.getTaskId(), request.getWorkerId());
@@ -35,22 +38,39 @@ public class TaskStatusService {
         TaskStatus status;
 
         if (optionalStatus.isPresent()) {
-            // Update existing status
             status = optionalStatus.get();
             status.setStatus(request.getStatus());
-            status.setUserId(request.getUserId()); // Set session userId in update
+            status.setUserId(request.getUserId());
         } else {
-            // Create new TaskStatus if not found
             status = new TaskStatus();
-            status.setUserId(request.getUserId()); // Set session userId in create
+            status.setUserId(request.getUserId());
             status.setTaskId(request.getTaskId());
             status.setWorkerId(request.getWorkerId());
             status.setStatus(request.getStatus());
         }
 
-        return taskStatusRepo.save(status);
+        TaskStatus savedStatus = taskStatusRepo.save(status);
 
+        // ✅ Send email if status is "ASSIGNED"
+        if ("ASSIGNED".equalsIgnoreCase(request.getStatus())) {
+            Optional<UserRegistration> workerOpt = regUser.findById(request.getWorkerId());
+            Optional<CreateTask> taskOpt = createTaskRepo.findById(request.getTaskId());
+
+            if (workerOpt.isPresent() && taskOpt.isPresent()) {
+                UserRegistration worker = workerOpt.get();
+                CreateTask task = taskOpt.get();
+
+                String workerName = worker.getFirstName() + " " + worker.getLastName();
+                String email = worker.getEmail();
+                String date = task.getScheduledDate() != null ? task.getScheduledDate().toString() : "N/A";
+
+                emailService.sendTaskAssignmentEmail(email, workerName, task.getTitle(), task.getDescription(), date);
+            }
+        }
+
+        return savedStatus;
     }
+
 
     /**
      * Retrieve task details and client info for all statuses assigned to a worker.

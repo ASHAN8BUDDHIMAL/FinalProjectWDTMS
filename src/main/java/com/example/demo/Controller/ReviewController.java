@@ -29,7 +29,7 @@ public class ReviewController {
     public ResponseEntity<?> createReview(
             @PathVariable Long taskId,
             @PathVariable Long workerId,
-            @RequestParam int rating,
+            @RequestParam(required = false) Integer rating, // ✅ now optional
             @RequestParam String text,
             @RequestParam(required = false) MultipartFile image,
             HttpSession session) {

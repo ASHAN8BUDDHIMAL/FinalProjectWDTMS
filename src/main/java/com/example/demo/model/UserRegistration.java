@@ -26,6 +26,7 @@ public class UserRegistration {
         private String city;
         private String postalCode;
         private String userType;
+        private boolean active = true;
         @Lob
         @Column(columnDefinition = "MEDIUMBLOB")
         private byte[] profilePicture;
@@ -117,6 +118,14 @@ public class UserRegistration {
 
         public void setUserType(String userType) {
                 this.userType = userType;
+        }
+
+        public boolean isActive() {
+                return active;
+        }
+
+        public void setActive(boolean active) {
+                this.active = active;
         }
 
         public byte[] getProfilePicture() {
