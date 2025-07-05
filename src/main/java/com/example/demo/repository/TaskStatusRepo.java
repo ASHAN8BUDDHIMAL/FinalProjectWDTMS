@@ -2,6 +2,7 @@ package com.example.demo.repository;
 
 import com.example.demo.model.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -18,4 +19,8 @@ public interface TaskStatusRepo extends JpaRepository<TaskStatus, Long> {
     List<TaskStatus> findByTaskIdIn(List<Long> taskIds);
 
     Optional<TaskStatus> findByTaskIdAndWorkerIdAndStatus(Long taskId, Long workerId, String status);
+
+    @Query("SELECT DISTINCT ts.taskId FROM TaskStatus ts WHERE ts.status = 'COMPLETED'")
+    List<Long> findTaskIdsWithCompletedStatus();
+
 }

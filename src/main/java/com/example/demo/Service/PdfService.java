@@ -1,91 +1,78 @@
 package com.example.demo.Service;
 
 import com.example.demo.DTO.WorkerReportDTO;
-import com.itextpdf.io.font.constants.StandardFonts;
-import com.itextpdf.kernel.colors.ColorConstants;
-import com.itextpdf.kernel.font.PdfFontFactory;
-import com.itextpdf.layout.element.*;
-import com.itextpdf.layout.properties.TextAlignment;
 import org.springframework.stereotype.Service;
+import org.xhtmlrenderer.pdf.ITextRenderer;
+
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.Map;
-import com.itextpdf.kernel.pdf.PdfWriter;
-import com.itextpdf.kernel.pdf.PdfDocument;
-import com.itextpdf.layout.Document;
-
-
 
 @Service
 public class PdfService {
+
     public byte[] generatePdf(WorkerReportDTO report) {
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
-            PdfWriter writer = new PdfWriter(baos);
-            PdfDocument pdf = new PdfDocument(writer);
-            Document document = new Document(pdf);
+            String html = generateHtml(report);
 
-            var titleFont = PdfFontFactory.createFont(StandardFonts.HELVETICA_BOLD);
-            var normalFont = PdfFontFactory.createFont(StandardFonts.HELVETICA);
+            ITextRenderer renderer = new ITextRenderer();
+            renderer.setDocumentFromString(html);
+            renderer.layout();
+            renderer.createPDF(baos);
 
-            // Title
-            Paragraph title = new Paragraph("Worker Monthly Report")
-                    .setFont(titleFont)
-                    .setFontSize(20)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFontColor(ColorConstants.BLUE)
-                    .setMarginBottom(20);
-            document.add(title);
-
-            // Worker Info
-            Table infoTable = new Table(2).useAllAvailableWidth();
-            infoTable.addCell(new Cell().add("Worker Name").setBold());
-            infoTable.addCell(report.getWorkerName());
-            infoTable.addCell(new Cell().add("Worker ID").setBold());
-            infoTable.addCell(String.valueOf(report.getWorkerId()));
-            infoTable.addCell(new Cell().add("Generated Date").setBold());
-            infoTable.addCell(LocalDate.now().toString());
-            document.add(infoTable.setMarginBottom(20));
-
-            // Metrics
-            document.add(new Paragraph("Performance Summary")
-                    .setFont(titleFont).setFontSize(14).setFontColor(ColorConstants.BLACK).setMarginBottom(10));
-
-            Table metrics = new Table(2).useAllAvailableWidth();
-            metrics.addCell(new Cell().add("Completed Tasks").setBold());
-            metrics.addCell(String.valueOf(report.getCompletedTasks()));
-            metrics.addCell(new Cell().add("Incomplete Tasks").setBold());
-            metrics.addCell(String.valueOf(report.getIncompleteTasks()));
-            metrics.addCell(new Cell().add("Average Rating").setBold());
-            metrics.addCell(String.format("%.1f ★", report.getAverageRating()));
-            metrics.addCell(new Cell().add("Total Monthly Income").setBold());
-            metrics.addCell("Rs. " + String.format("%.2f", report.getTotalMonthlyIncome()));
-            document.add(metrics.setMarginBottom(25));
-
-            // Monthly Income Table
-            document.add(new Paragraph("Monthly Income Breakdown")
-                    .setFont(titleFont).setFontSize(14).setFontColor(ColorConstants.BLACK).setMarginBottom(10));
-
-            Table incomeTable = new Table(new float[]{2, 2}).useAllAvailableWidth();
-            incomeTable.addHeaderCell(new Cell().add("Month").setBackgroundColor(ColorConstants.LIGHT_GRAY).setBold());
-            incomeTable.addHeaderCell(new Cell().add("Income (Rs.)").setBackgroundColor(ColorConstants.LIGHT_GRAY).setBold());
-
-            for (Map.Entry<String, Double> entry : report.getMonthlyIncome().entrySet()) {
-                incomeTable.addCell(new Cell().add(entry.getKey()));
-                incomeTable.addCell(new Cell().add(String.format("%.2f", entry.getValue())));
-            }
-            document.add(incomeTable.setMarginBottom(30));
-
-            document.add(new Paragraph("End of Report")
-                    .setFont(normalFont)
-                    .setTextAlignment(TextAlignment.CENTER)
-                    .setFontColor(ColorConstants.GRAY)
-                    .setMarginTop(40));
-
-            document.close();
             return baos.toByteArray();
-
         } catch (Exception e) {
-            throw new RuntimeException("Failed to generate PDF", e);
+            throw new RuntimeException("PDF generation failed", e);
         }
+    }
+
+    private String generateHtml(WorkerReportDTO report) {
+
+        StringBuilder html = new StringBuilder();
+        html.append("<html><head><style>")
+                .append("body { font-family: Arial, sans-serif; padding: 20px; }")
+                .append("h1 { color: #007acc; text-align: center; margin-bottom: 0; }")
+                .append("h2 { color: #333; margin-top: 10px; }")
+                .append("table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 14px; }")
+                .append("th, td { border: 1px solid #ccc; padding: 10px; text-align: left; }")
+                .append("th { background-color: #007acc; color: white; }")
+                .append("tbody tr:nth-child(even) { background-color: #f9f9f9; }")
+                .append("footer { margin-top: 40px; text-align: center; color: gray; font-size: 12px; }")
+                .append("</style></head><body>");
+
+        html.append("<h1>FindWorker</h1>");
+        html.append("<h2>Worker Monthly Report</h2>");
+
+        // Summary table
+        html.append("<table>");
+        html.append("<thead><tr>")
+                .append("<th>Worker Name</th>")
+                .append("<th>Completed Tasks</th>")
+                .append("<th>Average Rating</th>")
+                .append("<th>Total Monthly Income (Rs.)</th>")
+                .append("<th>Report Generated On</th>")
+                .append("</tr></thead><tbody>");
+        html.append("<tr>")
+                .append("<td>").append(report.getWorkerName()).append("</td>")
+                .append("<td>").append(report.getCompletedTasks()).append("</td>")
+                .append("<td>").append(String.format("%.1f ★", report.getAverageRating())).append("</td>")
+                .append("<td>").append(String.format("%.2f", report.getTotalMonthlyIncome())).append("</td>")
+                .append("<td>").append(LocalDate.now()).append("</td>")
+                .append("</tr>");
+        html.append("</tbody></table>");
+
+        // Monthly income breakdown table
+        html.append("<h2>Monthly Income Breakdown</h2>");
+        html.append("<table><thead><tr><th>Month</th><th>Income (Rs.)</th></tr></thead><tbody>");
+        for (Map.Entry<String, Double> entry : report.getMonthlyIncome().entrySet()) {
+            html.append("<tr><td>").append(entry.getKey()).append("</td><td>")
+                    .append(String.format("%.2f", entry.getValue())).append("</td></tr>");
+        }
+        html.append("</tbody></table>");
+
+        html.append("<footer>End of Report</footer>");
+        html.append("</body></html>");
+
+        return html.toString();
     }
 }
