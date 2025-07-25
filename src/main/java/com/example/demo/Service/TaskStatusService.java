@@ -2,15 +2,15 @@ package com.example.demo.Service;
 
 import com.example.demo.DTO.ShowStatusDTO;
 import com.example.demo.DTO.TaskStatusRequest;
+import com.example.demo.model.BusySlot;
 import com.example.demo.model.CreateTask;
 import com.example.demo.model.TaskStatus;
 import com.example.demo.model.UserRegistration;
-import com.example.demo.repository.CreateTaskRepo;
-import com.example.demo.repository.RegUser;
-import com.example.demo.repository.TaskStatusRepo;
+import com.example.demo.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -29,6 +29,12 @@ public class TaskStatusService {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private TaskLocationRepo taskLocationRepo;
+
+    @Autowired
+    private BusySlotRepo busySlotRepo;
 
 
     public TaskStatus updateStatus(TaskStatusRequest request) {
@@ -210,7 +216,12 @@ public class TaskStatusService {
         // 2. Update status if needed (idempotent operation)
         if (!"CONFIRMED".equals(status.getStatus())) {
             status.setStatus("CONFIRMED");
-            return taskStatusRepo.save(status);
+            TaskStatus updatedStatus = taskStatusRepo.save(status);
+
+            // 3. Save the corresponding busy slot now that task is confirmed
+            saveBusySlotsFromConfirmedTasks();
+
+            return updatedStatus;
         }
 
         return status;
@@ -259,6 +270,52 @@ public class TaskStatusService {
     public static class TaskStatusChangeException extends RuntimeException {
         public TaskStatusChangeException(String message) {
             super(message);
+        }
+    }
+
+
+    public void saveBusySlotsFromConfirmedTasks() {
+        // 1. Get all confirmed assignments
+        List<TaskStatus> confirmedStatuses = taskStatusRepo.findByStatus("CONFIRMED");
+
+        for (TaskStatus status : confirmedStatuses) {
+            Long taskId = status.getTaskId();
+            Long workerId = status.getWorkerId();
+            Long userId = status.getUserId(); // this is the client
+
+            // 2. Get task by ID
+            Optional<CreateTask> optionalTask = createTaskRepo.findById(taskId);
+
+            if (optionalTask.isPresent()) {
+                CreateTask task = optionalTask.get();
+
+                BusySlot busySlot = new BusySlot();
+                busySlot.setTaskId(task.getId());
+                busySlot.setTitle(task.getTitle());
+                busySlot.setDate(task.getScheduledDate().toLocalDate());
+                busySlot.setStartTime(task.getScheduledDate().toLocalTime());
+                busySlot.setEndTime(LocalTime.of(17, 0)); // Default end time
+                busySlot.setClientId(userId);
+                busySlot.setWorkerId(workerId);
+
+                // 3. Load client name using client ID
+                regUser.findById(userId).ifPresent(user -> {
+                    busySlot.setClientFirstName(user.getFirstName());
+                    busySlot.setClientLastName(user.getLastName());
+                });
+
+                // 4. Load task location if available
+                taskLocationRepo.findByTaskId(taskId).ifPresent(loc -> {
+                    busySlot.setTaskCity(loc.getCity());
+//                    busySlot.setLatitude(loc.getLatitude());
+//                    busySlot.setLongitude(loc.getLongitude());
+                });
+
+                // 5. Save to repository
+                busySlotRepo.save(busySlot);
+            } else {
+                System.out.println("Task not found for ID: " + taskId);
+            }
         }
     }
 

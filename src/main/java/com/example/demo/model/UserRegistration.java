@@ -4,6 +4,8 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
+
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -26,10 +28,13 @@ public class UserRegistration {
         private String city;
         private String postalCode;
         private String userType;
+        private LocalDateTime createdAt;
         private boolean active = true;
         @Lob
         @Column(columnDefinition = "MEDIUMBLOB")
         private byte[] profilePicture;
+
+
 
 
         public Long getId() {
@@ -118,6 +123,14 @@ public class UserRegistration {
 
         public void setUserType(String userType) {
                 this.userType = userType;
+        }
+
+        public LocalDateTime getCreatedAt() {
+                return createdAt;
+        }
+
+        public void setCreatedAt(LocalDateTime createdAt) {
+                this.createdAt = createdAt;
         }
 
         public boolean isActive() {
