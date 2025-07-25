@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 
 @AllArgsConstructor
 @NoArgsConstructor
+
 @Entity
 @Table(name = "created_tasks")
 public class CreateTask {

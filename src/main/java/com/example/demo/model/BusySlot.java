@@ -20,12 +20,38 @@ public class BusySlot {
     private Long workerId;
     private Long clientId;
     private Long taskId;
-
+    private String clientFirstName;
+    private String clientLastName;
     private String title;
 
     private LocalDate date;
     private LocalTime startTime;
     private LocalTime endTime;
+    private String taskCity;
+
+    public String getClientFirstName() {
+        return clientFirstName;
+    }
+
+    public void setClientFirstName(String clientFirstName) {
+        this.clientFirstName = clientFirstName;
+    }
+
+    public String getClientLastName() {
+        return clientLastName;
+    }
+
+    public void setClientLastName(String clientLastName) {
+        this.clientLastName = clientLastName;
+    }
+
+    public String getTaskCity() {
+        return taskCity;
+    }
+
+    public void setTaskCity(String taskCity) {
+        this.taskCity = taskCity;
+    }
 
     public Long getId() {
         return id;

@@ -3,6 +3,7 @@ package com.example.demo.repository;
 import com.example.demo.model.TaskStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -23,4 +24,8 @@ public interface TaskStatusRepo extends JpaRepository<TaskStatus, Long> {
     @Query("SELECT DISTINCT ts.taskId FROM TaskStatus ts WHERE ts.status = 'COMPLETED'")
     List<Long> findTaskIdsWithCompletedStatus();
 
+    @Query("SELECT MONTH(t.updatedAt), COUNT(t) FROM TaskStatus t WHERE t.status = 'Completed' AND YEAR(t.updatedAt) = :year GROUP BY MONTH(t.updatedAt)")
+    List<Object[]> countCompletedTasksByMonth(int year);
+
+    List<TaskStatus> findByStatus(String status);  // Gets all records with given status
 }
