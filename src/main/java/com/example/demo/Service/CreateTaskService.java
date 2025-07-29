@@ -1,7 +1,6 @@
 package com.example.demo.Service;
 
 import com.example.demo.model.CreateTask;
-import com.example.demo.model.TaskStatus;
 import com.example.demo.repository.CreateTaskRepo;
 import com.example.demo.repository.RegUser;
 import com.example.demo.repository.TaskStatusRepo;
@@ -41,7 +40,7 @@ public class CreateTaskService {
                     t.setTitle(updates.getTitle());
                     t.setDescription(updates.getDescription());
                     t.setRequiredSkills(updates.getRequiredSkills());
-                    t.setMinRating(updates.getMinRating());
+                    t.setAllocatedTime(updates.getAllocatedTime());
                     t.setScheduledDate(updates.getScheduledDate());
                     t.setStatus(updates.getStatus());
                     t.setAllocatedAmount(updates.getAllocatedAmount());

@@ -31,6 +31,17 @@ public class BusySlotService {
         busySlotRepo.deleteById(id);
     }
 
-
+    public BusySlot updateBusySlot(Long id, Long workerId, BusySlot updatedBusySlot) {
+        return busySlotRepo.findByIdAndWorkerId(id, workerId)
+                .map(existing -> {
+                    existing.setTitle(updatedBusySlot.getTitle());
+                    existing.setDate(updatedBusySlot.getDate());
+                    existing.setStartTime(updatedBusySlot.getStartTime());
+                    existing.setEndTime(updatedBusySlot.getEndTime());
+                    existing.setTaskCity(updatedBusySlot.getTaskCity());
+                    return busySlotRepo.save(existing);
+                })
+                .orElseThrow(() -> new RuntimeException("Busy slot not found or not owned by user"));
+    }
 
 }

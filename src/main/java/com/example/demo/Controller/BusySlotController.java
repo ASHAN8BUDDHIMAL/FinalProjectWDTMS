@@ -3,6 +3,8 @@ import com.example.demo.Service.BusySlotService;
 import com.example.demo.model.BusySlot;
 import jakarta.servlet.http.HttpSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -36,5 +38,24 @@ public class BusySlotController {
     @DeleteMapping("/{id}")
     public void deleteBusySlot(@PathVariable Long id) {
         busySlotService.deleteBusySlot(id);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<BusySlot> updateBusySlot(
+            @PathVariable Long id,
+            @RequestBody BusySlot updatedBusySlot,
+            HttpSession session) {
+
+        Long workerId = (Long) session.getAttribute("loggedInUserId");
+        if (workerId == null) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+        }
+
+        try {
+            BusySlot result = busySlotService.updateBusySlot(id, workerId, updatedBusySlot);
+            return ResponseEntity.ok(result);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+        }
     }
 }
