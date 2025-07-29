@@ -103,7 +103,7 @@ public class TaskStatusService {
                     dto.setTitle(task.getTitle());
                     dto.setDescription(task.getDescription());
                     dto.setRequiredSkills(task.getRequiredSkills());
-                    dto.setMinRating(task.getMinRating());
+                    dto.setAllocatedTime(task.getAllocatedTime());
                     dto.setScheduledDate(task.getScheduledDate());
                     dto.setAllocatedAmount(task.getAllocatedAmount());
                     dto.setStatus(status.getStatus());
@@ -173,7 +173,7 @@ public class TaskStatusService {
                         dto.setTitle(task.getTitle());
                         dto.setDescription(task.getDescription());
                         dto.setRequiredSkills(task.getRequiredSkills());
-                        dto.setMinRating(task.getMinRating());
+                        dto.setAllocatedTime(task.getAllocatedTime());
                         dto.setScheduledDate(task.getScheduledDate());
                         dto.setAllocatedAmount(task.getAllocatedAmount());
                         dto.setUserId(task.getUserId());

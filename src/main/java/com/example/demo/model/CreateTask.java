@@ -20,7 +20,7 @@ public class CreateTask {
     private String title;
     private String description;
     private String requiredSkills;
-    private Double minRating;
+    private Integer allocatedTime;
 
     @CreationTimestamp
     @Column(name = "created_date", updatable = false, nullable = false)
@@ -70,13 +70,6 @@ public class CreateTask {
         this.requiredSkills = requiredSkills;
     }
 
-//    public String getLocation() {
-//        return location;
-//    }
-//
-//    public void setLocation(String location) {
-//        this.location = location;
-//    }
 
     public LocalDateTime getCreatedDate() {
         return createdDate;
@@ -86,12 +79,12 @@ public class CreateTask {
         this.createdDate = createdDate;
     }
 
-    public Double getMinRating() {
-        return minRating;
+    public Integer getAllocatedTime() {
+        return allocatedTime;
     }
 
-    public void setMinRating(Double minRating) {
-        this.minRating = minRating;
+    public void setAllocatedTime(Integer allocatedTime) {
+        this.allocatedTime = allocatedTime;
     }
 
     public LocalDateTime getScheduledDate() {
@@ -126,21 +119,7 @@ public class CreateTask {
         this.workerDone = workerDone;
     }
 
-//    public Double getLatitude() {
-//        return latitude;
-//    }
-//
-//    public void setLatitude(Double latitude) {
-//        this.latitude = latitude;
-//    }
-//
-//    public Double getLongitude() {
-//        return longitude;
-//    }
-//
-//    public void setLongitude(Double longitude) {
-//        this.longitude = longitude;
-//    }
+
 }
 
 

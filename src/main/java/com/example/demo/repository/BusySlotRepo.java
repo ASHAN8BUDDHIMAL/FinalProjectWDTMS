@@ -6,6 +6,7 @@ import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 public interface BusySlotRepo extends JpaRepository<BusySlot, Long> {
     @Query("SELECT b FROM BusySlot b WHERE b.workerId = :workerId AND b.date = :date")
@@ -13,4 +14,6 @@ public interface BusySlotRepo extends JpaRepository<BusySlot, Long> {
 
     // Optionally keep your existing method if needed
     List<BusySlot> findByWorkerId(Long workerId);
+    Optional<BusySlot> findByIdAndWorkerId(Long id, Long workerId);
+
 }

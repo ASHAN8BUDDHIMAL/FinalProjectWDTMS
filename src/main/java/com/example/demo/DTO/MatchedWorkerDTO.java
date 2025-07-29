@@ -7,6 +7,24 @@ public class MatchedWorkerDTO {
     private String skills;
 //    private Double rating;
     private String email;
+    private boolean available;
+    private double score;
+
+    public boolean isAvailable() {
+        return available;
+    }
+
+    public void setAvailable(boolean available) {
+        this.available = available;
+    }
+
+    public double getScore() {
+        return score;
+    }
+
+    public void setScore(double score) {
+        this.score = score;
+    }
 
     public Long getUserId() {
         return userId;

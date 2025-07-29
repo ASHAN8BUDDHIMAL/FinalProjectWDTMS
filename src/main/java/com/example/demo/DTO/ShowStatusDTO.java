@@ -7,7 +7,7 @@ public class ShowStatusDTO {
     private String title;
     private String description;
     private String requiredSkills;
-    private Double minRating;
+    private Integer allocatedTime;
     private LocalDateTime scheduledDate;
     private String status;
     private Double allocatedAmount;
@@ -74,12 +74,12 @@ public class ShowStatusDTO {
         this.requiredSkills = requiredSkills;
     }
 
-    public Double getMinRating() {
-        return minRating;
+    public Integer getAllocatedTime() {
+        return allocatedTime;
     }
 
-    public void setMinRating(Double minRating) {
-        this.minRating = minRating;
+    public void setAllocatedTime(Integer allocatedTime) {
+        this.allocatedTime = allocatedTime;
     }
 
     public LocalDateTime getScheduledDate() {
