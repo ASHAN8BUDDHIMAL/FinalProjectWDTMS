@@ -81,6 +81,22 @@ public class ReviewController {
             ));
         }
     }
+
+    @GetMapping("/worker/{workerId}")
+    public ResponseEntity<?> getReviewsForUser(@PathVariable Long workerId) {
+        try {
+            List<ReviewResponseDTO> reviews = reviewService.getReviewsForWorker(workerId);
+            return ResponseEntity.ok(Map.of(
+                    "status", "success",
+                    "reviews", reviews
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                    "status", "error",
+                    "message", e.getMessage()
+            ));
+        }
+    }
     }
 
 
