@@ -15,7 +15,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -53,14 +52,6 @@ public class ReviewService {
         if (reviewRepo.existsByTaskIdAndUserId(taskId, userId)) {
             throw new RuntimeException("Already reviewed this task");
         }
-
-        // You might need to get the task status for this worker to validate rating requirement
-        // If you have a TaskStatus repository or service, check task status here (pseudo-code):
-        // String taskStatus = taskStatusRepo.findStatusByTaskIdAndWorkerId(taskId, workerId);
-        // if ("COMPLETED".equalsIgnoreCase(taskStatus) && (rating == null || rating < 1 || rating > 5)) {
-        //     throw new RuntimeException("Rating must be between 1 and 5 for completed tasks");
-        // }
-        // For now, assuming rating can be null if not completed.
 
         Review review = new Review();
         review.setTaskId(taskId);
