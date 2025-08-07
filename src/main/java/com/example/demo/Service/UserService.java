@@ -23,9 +23,6 @@ public class UserService {
     @Autowired
     private WorkerRepo workerRepo;
 
-
-
-
     public UserRegistration create(UserRegistration userReg) {
         return regUser.save(userReg);
     }
