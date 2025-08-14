@@ -12,6 +12,16 @@ public class WorkerReportDTO {
     private int completedTasks;
     private int incompleteTasks;
     private double averageRating;
+    private double avarageIncome;
+
+
+    public double getAvarageIncome() {
+        return avarageIncome;
+    }
+
+    public void setAvarageIncome(double avarageIncome) {
+        this.avarageIncome = avarageIncome;
+    }
 
     public Long getWorkerId() {
         return workerId;

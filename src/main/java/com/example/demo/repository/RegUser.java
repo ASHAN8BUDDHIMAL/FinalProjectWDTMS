@@ -11,7 +11,7 @@ import java.util.Optional;
 @Repository
 public interface RegUser extends JpaRepository<UserRegistration, Long> {
     Optional<UserRegistration> findByEmailAndPassword(String email, String password);
-    UserRegistration findById(long id);
+    Optional<UserRegistration> findById(Long id);
     Optional<UserRegistration> findByEmail(String email);
 
     List<RegUser> findByIdIn(List<Long> ids);

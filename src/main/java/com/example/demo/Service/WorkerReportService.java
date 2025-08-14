@@ -37,6 +37,7 @@ public class WorkerReportService {
         WorkerReportDTO dto = new WorkerReportDTO();
         dto.setWorkerId(workerId);
 
+
         // 1. Get all task statuses for the worker
         List<TaskStatus> statuses = taskStatusRepo.findByWorkerId(workerId);
         List<Long> taskIds = statuses.stream().map(TaskStatus::getTaskId).distinct().toList();
@@ -51,6 +52,8 @@ public class WorkerReportService {
         double totalIncome = 0.0;
         int completed = 0;
         int incomplete = 0;
+        double avarageIncome = 0.0;
+
 
         for (TaskStatus status : statuses) {
             if (taskMap.containsKey(status.getTaskId())) {
@@ -63,6 +66,7 @@ public class WorkerReportService {
                     double amount = task.getAllocatedAmount();
                     monthlyIncome.put(month, monthlyIncome.getOrDefault(month, 0.0) + amount);
                     totalIncome += amount;
+                    avarageIncome = totalIncome/completed;
                 } else if ("INCOMPLETED".equalsIgnoreCase(status.getStatus())) {
                     incomplete++;
                 }
@@ -72,6 +76,7 @@ public class WorkerReportService {
         dto.setMonthlyIncome(monthlyIncome);
         dto.setTotalMonthlyIncome(totalIncome);
         dto.setCompletedTasks(completed);
+        dto.setAvarageIncome(avarageIncome);
         dto.setIncompleteTasks(incomplete);
 
         // 4. Worker Name
